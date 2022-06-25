@@ -256,11 +256,11 @@ public class WLocationExtDialog extends Window implements EventListener<Event>
 		lblPostal.setStyle(LABEL_STYLE);
 		lblPostalAdd    = new Label(Msg.getMsg(Env.getCtx(), "PostalAdd"));
 		lblPostalAdd.setStyle(LABEL_STYLE);
-		lblCountry      = new Label(Msg.getMsg(Env.getCtx(), "Country"));
+		lblCountry      = new Label(Msg.getElement(Env.getCtx(), "C_Country_ID"));
 		lblCountry.setStyle(LABEL_STYLE);
-		lblMunicipality = new Label(Msg.getMsg(Env.getCtx(), "Municipality"));
+		lblMunicipality = new Label(Msg.getElement(Env.getCtx(), "C_Municipality_ID"));
 		lblMunicipality.setStyle(LABEL_STYLE);
-		lblParish		= new Label(Msg.getMsg(Env.getCtx(), "Parish"));
+		lblParish		= new Label(Msg.getElement(Env.getCtx(), "C_Parish_ID"));
 		lblParish.setStyle(LABEL_STYLE);
 		
 		txtAddress1 = new Textbox();

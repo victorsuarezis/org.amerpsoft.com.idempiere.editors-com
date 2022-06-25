@@ -253,7 +253,7 @@ public class MBPartnerLocationExt extends X_C_BPartner_Location {
 
 		// Check uniqueness
 		MBPartnerLocationExt[] locations = getForBPartner(getCtx(),
-				getC_BPartner_ID());
+				getC_BPartner_ID(), get_TrxName());
 		boolean unique = locations.length == 0;
 		while (!unique) {
 			unique = true;
