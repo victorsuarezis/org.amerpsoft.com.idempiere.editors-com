@@ -40,7 +40,7 @@ public class MCountryExt extends X_C_Country implements Comparator<Object>, Seri
     private String COLUMNNAME_HasParish ="HasParish";
 	private String COLUMNNAME_HasMunicipality = "HasMunicipality";
 	private String COLUMNNAME_HasCommunity = "HasCommunity";
-
+	private String COLUMNNAME_IsCapitalize = "IsCapitalize";
 
 	/**
      * 	Get Country (cached)
@@ -525,6 +525,14 @@ public class MCountryExt extends X_C_Country implements Comparator<Object>, Seri
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+	
+	public void setIsCapitalize(boolean isCapitalize) {
+		set_Value(COLUMNNAME_IsCapitalize, isCapitalize);
+	}
+
+	public boolean isCapitalize() {
+		return get_ValueAsBoolean(COLUMNNAME_IsCapitalize);
 	}
 
 

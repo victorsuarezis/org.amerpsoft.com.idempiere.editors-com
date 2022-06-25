@@ -12,16 +12,17 @@ import java.sql.SQLException;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import org.compiere.model.MAccount;
 import org.compiere.model.MCountry;
 import org.compiere.model.MLocation;
 import org.compiere.model.MRegion;
 import org.compiere.model.MSysConfig;
+import org.compiere.model.PO;
 import org.compiere.process.DocAction;
 import org.compiere.util.CCache;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
-import org.amerp.amxeditor.model.MCountryExt;
-import org.amerp.amxeditor.model.MRegionExt;
+import org.compiere.util.Env;
 
 /**
  *	Location (Address)
@@ -59,6 +60,79 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp, DocAc
 	private 	MMunicipality	m_m = null;
 	private 	MParish			m_p = null;	
 	
+	@Override
+	protected boolean beforeSave(boolean newRecord) {
+		String isCapitalize = DB.getSQLValueString(get_TrxName(), "SELECT IsCapitalize FROM C_Country WHERE C_Country_ID=?", getC_Country_ID());
+		if(isCapitalize != null && "Y".equals(isCapitalize)) {
+			if(getAddress1() != null)
+				setAddress1(getAddress1().toUpperCase());
+			if(getAddress2() != null)
+				setAddress2(getAddress2().toUpperCase());
+			if(getAddress3() != null)
+				setAddress3(getAddress3().toUpperCase());
+			if(getAddress4() != null)
+				setAddress4(getAddress4().toUpperCase());
+			if(getAddress5() != null)
+				setAddress5(getAddress5().toUpperCase());
+			if(getCity() != null)
+				setCity(getCity().toUpperCase());
+			if(getRegionName() != null)
+				setRegionName(getRegionName().toUpperCase());
+		}
+		return super.beforeSave(newRecord);
+	}
+	
+	/**
+	 * 	After Save
+	 *	@param newRecord new
+	 *	@param success success
+	 *	@return success
+	 */
+	@Override
+	protected boolean afterSave (boolean newRecord, boolean success) {
+		if (!success)
+			return success;
+		//	Value/Name change in Account
+		if (!newRecord
+			&& ("Y".equals(Env.getContext(getCtx(), "$Element_LF")) 
+				|| "Y".equals(Env.getContext(getCtx(), "$Element_LT")))
+			&& (is_ValueChanged("Postal") || is_ValueChanged("City"))
+			){
+			StringBuilder msgup = new StringBuilder(
+					"(C_LocFrom_ID=").append(getC_Location_ID()) 
+					.append(" OR C_LocTo_ID=").append(getC_Location_ID()).append(")");
+			MAccount.updateValueDescription(getCtx(), msgup.toString(), get_TrxName());
+		}	
+		
+		//Update BP_Location name IDEMPIERE 417
+		if (get_TrxName().startsWith(PO.LOCAL_TRX_PREFIX)) { // saved without trx
+			int bplID = DB.getSQLValueEx(get_TrxName(), updateBPLocName, getC_Location_ID());
+			if (bplID>0)
+			{
+				// just trigger BPLocation name change when the location change affects the name:
+				// START_VALUE_BPLOCATION_NAME
+				// 0 - City
+				// 1 - City + Address1
+				// 2 - City + Address1 + Address2
+				// 3 - City + Address1 + Address2 + Region
+				// 4 - City + Address1 + Address2 + Region + ID
+				int bplocname = MSysConfig.getIntValue(MSysConfig.START_VALUE_BPLOCATION_NAME, 0, getAD_Client_ID(), getAD_Org_ID());
+				if (bplocname < 0 || bplocname > 4)
+					bplocname = 0;
+				if (   is_ValueChanged(COLUMNNAME_City)
+					|| is_ValueChanged(COLUMNNAME_C_City_ID)
+					|| (bplocname >= 1 && is_ValueChanged(COLUMNNAME_Address1))
+					|| (bplocname >= 2 && is_ValueChanged(COLUMNNAME_Address2))
+					|| (bplocname >= 3 && (is_ValueChanged(COLUMNNAME_RegionName) || is_ValueChanged(COLUMNNAME_C_Region_ID)))
+					) {
+					MBPartnerLocationExt bpl = new MBPartnerLocationExt(getCtx(), bplID, get_TrxName());
+					bpl.setName(bpl.getBPLocName(this));
+					bpl.saveEx();
+				}
+			}
+		}
+		return success;
+	}	//	afterSave
 	
 	/**
 	 * 	Get Location from Cache
@@ -139,9 +213,9 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp, DocAc
 		super (ctx, C_Location_ID, trxName);
 		if (C_Location_ID == 0)
 		{
-			MCountry defaultCountry = MCountry.getDefault(getCtx()); 
+			MCountry defaultCountry = MCountry.getDefault(); 
 			setCountry(defaultCountry);
-			MRegion defaultRegion = MRegion.getDefault(getCtx());
+			MRegion defaultRegion = MRegion.getDefault();
 			if (defaultRegion != null 
 				&& defaultRegion.getC_Country_ID() == defaultCountry.getC_Country_ID())
 				setRegion(defaultRegion);
@@ -284,8 +358,8 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp, DocAc
 			setRegionName(m_r.getName());
 			if (m_r.getC_Country_ID() != getC_Country_ID())
 			{
-				log.info("Region(" + region + ") C_Country_ID=" + region.getC_Country_ID()
-						+ " - From  C_Country_ID=" + getC_Country_ID());
+//				log.info("Region(" + region + ") C_Country_ID=" + region.getC_Country_ID()
+//						+ " - From  C_Country_ID=" + getC_Country_ID());
 				setC_Country_ID(region.getC_Country_ID());
 			}
 		}
