@@ -181,7 +181,7 @@ public class MBPartnerLocationExt extends X_C_BPartner_Location {
 //			return false;
 
 		// Set New Name
-		if (".".equals(getName())) {
+		if (".".equals(getName()) && !isPreserveCustomName()) {
 			MLocationExt address = getLocation(true);
 			setName(getBPLocName(address));
 		}
