@@ -1229,7 +1229,8 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		{
             // IDEMPIERE-417 Force Update BPLocation.Name
         	if (m_GridField != null && m_GridField.getGridTab() != null
-        			&& "C_BPartner_Location".equals(m_GridField.getGridTab().getTableName()))
+        			&& "C_BPartner_Location".equals(m_GridField.getGridTab().getTableName())
+        			&& !m_GridField.getGridTab().getValueAsBoolean("IsPreserveCustomName"))
     		{
         		m_GridField.getGridTab().setValue("Name", ".");
 				success = true;
