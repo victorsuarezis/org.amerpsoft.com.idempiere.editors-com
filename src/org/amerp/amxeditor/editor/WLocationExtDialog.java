@@ -1149,6 +1149,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			if (inCountryAction || inOKAction)
 				return;
 			MRegionExt r = (MRegionExt) lstRegion.getSelectedItem().getValue();
+			m_location.setC_Country_ID(r.getC_Country_ID());
 			m_location.setRegion(r);
 			m_location.setC_City_ID(0);
 			m_location.setCity(null);
