@@ -143,6 +143,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 	private boolean onSaveError = false;
 	
 	private boolean isAutomaticPostalCode = false;
+	Row pnlCity = null;
 	//END
 
 	public WLocationExtDialog(String title, MLocationExt location)
@@ -170,11 +171,12 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		} catch (Exception e) {
 			log.log(Level.SEVERE, "Error: " + e.getLocalizedMessage());
 		}
-		init();
 		//      Current Country
 		for (MCountryExt country: MCountryExt.getCountries(Env.getCtx()))
 			lstCountry.appendItem(country.toString(), country);
 		setCountry();
+		init();
+		
 		lstCountry.addEventListener(Events.ON_SELECT,this);
 		lstRegion.addEventListener(Events.ON_SELECT,this);
 		lstMunicipality.addEventListener(Events.ON_SELECT,this);
@@ -406,7 +408,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		//txtAddress4.setHflex("1");
 		ZKUpdateUtil.setHflex(txtAddress4, "1");
 
-		Row pnlCity     = new Row();
+		pnlCity     = new Row();
 		pnlCity.appendChild(lblCity.rightAlign());
 		if(isAutomaticPostalCode) {
 			pnlCity.appendChild(fCity.getComponent());
@@ -594,6 +596,12 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 	{
 		if (mainPanel.getRows() != null)
 			mainPanel.getRows().getChildren().clear();
+		
+		txtCity.getChildren().clear();
+		txtCity.appendItem("", null);
+		txtCity.setValue(null);
+		fCity.getLookup().removeAllElements();
+		fCity.setValue(null);
 
 		MCountryExt country =  m_location.getCountryExt();
 		if (log.isLoggable(Level.FINE)) log.fine(country.getName() + ", Region=" + country.isHasRegion() + " " + country.getCaptureSequence()
@@ -618,6 +626,16 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 					lblRegion.setValue(Msg.getMsg(Env.getCtx(), "Region"));
 			}
 			s_oldCountry_ID = m_location.getC_Country_ID();
+			pnlCity = null;
+			pnlCity = new Row();
+			pnlCity.appendChild(lblCity.rightAlign());
+			if(isAutomaticPostalCode) {
+				pnlCity.appendChild(fCity.getComponent());
+				ZKUpdateUtil.setHflex(fCity.getComponent(), "1");
+			} else {
+				pnlCity.appendChild(txtCity);
+				ZKUpdateUtil.setHflex(txtCity, "1");
+			}
 		}
 		//  new Region
 		if (m_location.getC_Region_ID() > 0 && m_location.getC_Region().getC_Country_ID() == country.getC_Country_ID()) {
@@ -633,6 +651,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			Env.setContext(Env.getCtx(), m_WindowNo, "C_Region_ID", String.valueOf(m_location.getC_Region_ID()));
 		} else {
 			Env.setContext(Env.getCtx(), m_WindowNo, Env.TAB_INFO, "C_Region_ID", "0");
+			Env.setContext(Env.getCtx(), m_WindowNo, "C_Region_ID", "0");
 		}
 		// log.warning("....C_Country_ID"+String.valueOf(country.get_ID()));
 		Env.setContext(Env.getCtx(), m_WindowNo, Env.TAB_INFO, "C_Country_ID", String.valueOf(country.get_ID()));
@@ -640,7 +659,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		// City Filllist
 		fCity.actionRefresh();
 		txtCity.fillList();
-
+		
 		// actualiza cuando cambia la region	
 		if (m_location.getC_Region_ID() != s_oldRegion_ID)
 		{	
@@ -727,10 +746,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 				addComponents((Row)txtAddress4.getParent());
 				isAddress4Mandatory = s.endsWith("!");
 			} else if (s.startsWith("C")) {
-				if(isAutomaticPostalCode)
-					addComponents((Row)fCity.getComponent().getParent());
-				else
-					addComponents((Row)txtCity.getParent());
+				addComponents(pnlCity);
 				isCityMandatory = s.endsWith("!");
 			} else if (s.startsWith("MU") && m_location.getCountryExt().isHasRegion() && m_location.getCountryExt().isHasMunicipality()) {
 				addComponents((Row)lstMunicipality.getParent());
@@ -799,7 +815,8 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			if (m_location.getCountryExt().equals(listitem.getValue()))
 			{
 				lstCountry.setSelectedItem(listitem);
-				isAutomaticPostalCode = m_location.get_ValueAsBoolean("IsAutomaticPostalCode");
+				MCountry country = (MCountry) m_location.getC_Country();
+				isAutomaticPostalCode = country.get_ValueAsBoolean("IsAutomaticPostalCode");
 			}
 		}
 	}
@@ -909,15 +926,14 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 						MCity city = new MCity(Env.getCtx(), C_City_ID, null);
 						if (city.getC_Region_ID() > 0 && city.getC_Region_ID() != m_location.getC_Region_ID()) {
 							m_location.setRegion(MRegionExt.get(Env.getCtx(), city.getC_Region_ID()));
-							setRegion();
 						}
 					}
 				} else {
 					if (txtCity.getC_Region_ID() > 0 && txtCity.getC_Region_ID() != m_location.getC_Region_ID()) {
 						m_location.setRegion(MRegionExt.get(Env.getCtx(), txtCity.getC_Region_ID()));
-						setRegion();
 					}
 				}
+				setRegion();
 			}
 			
 			String msg = validate_OK();
@@ -997,11 +1013,18 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			inOKAction = true;
 			
 			if (m_location.getCountryExt().isHasRegion() && lstRegion.getSelectedItem() == null) {
-				int C_City_ID = fCity.getValue()==null?0:(int)fCity.getValue();
-				if (C_City_ID>0) {
-					MCity city = new MCity(Env.getCtx(), C_City_ID, null);
-					if (city.getC_Region_ID() > 0 && city.getC_Region_ID() != m_location.getC_Region_ID()) {
-						m_location.setRegion(MRegionExt.get(Env.getCtx(), city.getC_Region_ID()));
+				if(isAutomaticPostalCode) {
+					int C_City_ID = fCity.getValue()==null?0:(int)fCity.getValue();
+					if (C_City_ID>0) {
+						MCity city = new MCity(Env.getCtx(), C_City_ID, null);
+						if (city.getC_Region_ID() > 0 && city.getC_Region_ID() != m_location.getC_Region_ID()) {
+							m_location.setRegion(MRegionExt.get(Env.getCtx(), city.getC_Region_ID()));
+							setRegion();
+						}
+					}
+				} else {
+					if (txtCity.getC_Region_ID() > 0 && txtCity.getC_Region_ID() != m_location.getC_Region_ID()) {
+						m_location.setRegion(MRegionExt.get(Env.getCtx(), txtCity.getC_Region_ID()));
 						setRegion();
 					}
 				}
