@@ -126,7 +126,7 @@ public class MParish extends X_C_Parish implements DocAction {
 		if (s_Parishs == null || s_Parishs.size() == 0)
 			loadAllParishs(ctx);
 		ArrayList<MParish> list = new ArrayList<MParish>();
-		Iterator it = s_Parishs.values().iterator();
+		Iterator<MParish> it = s_Parishs.values().iterator();
 		while (it.hasNext())
 		{
 			MParish r = (MParish)it.next();

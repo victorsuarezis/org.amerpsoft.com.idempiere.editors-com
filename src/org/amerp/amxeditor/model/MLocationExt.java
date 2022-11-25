@@ -24,6 +24,8 @@ import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import com.kpiactive.model.MSuburb;
+
 /**
  *	Location (Address)
  *	
@@ -54,11 +56,13 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp, DocAc
 	//public static final String COLUMNNAME_MunicipalityName = "municipalityname";
 	public static final String COLUMNNAME_C_Parish_ID = "C_Parish_ID";
 	//public static final String COLUMNNAME_ParishName = "parishname";
+	public static final String COLUMNNAME_C_Suburb_ID = "C_Suburb_ID";
 	
 	static private 	MCountryExt		m_c = null;
 	private 	MRegionExt		m_r = null;
 	private 	MMunicipality	m_m = null;
 	private 	MParish			m_p = null;	
+	private		MSuburb		m_su = null;
 	
 	@Override
 	protected boolean beforeSave(boolean newRecord) {
@@ -457,6 +461,7 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp, DocAc
 			}
 		}
 	}	//	setParish
+	
 	/**
 	 * 	setC_Parish_ID
 	 *  @param C_Parish_ID
@@ -505,6 +510,7 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp, DocAc
 			 return 0;
 		return ii.intValue();
 	}
+	
 	/**
 	 * 	Get getParish
 	 *	@return MParish
@@ -519,6 +525,7 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp, DocAc
 			m_p = MParish.get(getCtx(), getC_Parish_ID());
 		return m_p;
 	}	
+	
 	/**
 	 * 	Get getC_Parish_ID
 	 *	@return C_Parish_ID
@@ -530,6 +537,54 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp, DocAc
 			 return 0;
 		return ii.intValue();
 	}
+	
+	/**
+	 * 	setSuburb
+	 *  @param suburb
+	 */
+	public void setSuburb(MSuburb suburb) {
+		m_su = suburb;
+		if (suburb == null)
+			this.setC_Suburb_ID(0);
+		else
+			this.setC_Suburb_ID(m_su.getC_Suburb_ID());
+	}	//	setSuburb
+	
+	/**
+	 * 	Get C_Suburb_ID
+	 *	@return C_Parish_ID
+	 */
+	public int getC_Suburb_ID () {
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Suburb_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+	
+	/**
+	 * 	setC_Suburb_ID
+	 *  @param C_Parish_ID
+	 */
+	public void setC_Suburb_ID(int C_Suburb_ID) {
+		if (C_Suburb_ID < 1) 
+			set_Value (COLUMNNAME_C_Suburb_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Suburb_ID, Integer.valueOf(C_Suburb_ID));	
+	}
+	
+	/**
+	 * 	Get Suburb
+	 *	@return MSuburb
+	 */
+	public MSuburb getSuburb() {
+		// Reset suburb if not match
+		if (m_su != null && m_su.getC_Suburb_ID() != getC_Suburb_ID())
+			m_su = null;
+		//
+		if (m_su == null && getC_Suburb_ID() != 0)
+			m_su = MSuburb.get(getCtx(), getC_Suburb_ID());
+		return m_su;
+	}	
 
 	/**
 	 * 	Get (local) Region Name
