@@ -7,10 +7,11 @@ import java.sql.ResultSet;
 
 import org.adempiere.base.IModelFactory;
 import org.amerp.amxeditor.model.*;
-import org.compiere.model.MCountry;
 import org.compiere.model.PO;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+
+import com.kpiactive.model.MSuburb;
 
 
 /**
@@ -41,8 +42,9 @@ public class ModelFactory implements IModelFactory{
 		if(p_tableName.equals(MParish.Table_Name)) {
 			return MParish.class;
 		}
-//	    log.warning("....................");
-//	    log.warning("p_tableName:"+p_tableName);
+		if(p_tableName.equals(MSuburb.Table_Name)) {
+			return MSuburb.class;
+		}
 	    return null;
     }
 
@@ -51,13 +53,10 @@ public class ModelFactory implements IModelFactory{
 	 */
     @Override
     public PO getPO(String p_tableName, int Record_ID, String p_trxName) {
-	    // TODO Auto-generated method stub
     	if(p_tableName.equalsIgnoreCase(MLocationExt.Table_Name)) {
-
     		return new MLocationExt(Env.getCtx(),Record_ID,p_trxName);
     	}
     	if(p_tableName.equalsIgnoreCase(MBPartnerLocationExt.Table_Name)) {
-
     		return new MBPartnerLocationExt(Env.getCtx(),Record_ID,p_trxName);
     	}
 //	    if(p_tableName.equalsIgnoreCase(MCountryExt.Table_Name) ) {
@@ -69,8 +68,9 @@ public class ModelFactory implements IModelFactory{
 		if(p_tableName.equals(MParish.Table_Name)) {
 			return new MParish(Env.getCtx(),Record_ID,p_trxName);
 		}
-//	    log.warning("....................");
-//	    log.warning("p_tableName:"+p_tableName);
+		if(p_tableName.equals(MSuburb.Table_Name)) {
+			return new MSuburb(Env.getCtx(), Record_ID, p_trxName);
+		}
     	return null;
     }
 
@@ -79,7 +79,6 @@ public class ModelFactory implements IModelFactory{
 	 */
     @Override
     public PO getPO(String p_tableName, ResultSet p_rs, String p_trxName) {
-	    // TODO Auto-generated method stub
     	if(p_tableName.equalsIgnoreCase(MLocationExt.Table_Name)) {
     		return new MLocationExt(Env.getCtx(),p_rs,p_trxName);
     	}
@@ -95,8 +94,9 @@ public class ModelFactory implements IModelFactory{
 		if(p_tableName.equals(MParish.Table_Name)) {
 			return new MParish(Env.getCtx(),p_rs,p_trxName);
 		}
-//	    log.warning("....................");
-//	    log.warning("p_tableName:"+p_tableName);
+		if(p_tableName.equals(MSuburb.Table_Name)) {
+			return new MSuburb(Env.getCtx(), p_rs, p_trxName);
+		}
 	    return null;
     }
 

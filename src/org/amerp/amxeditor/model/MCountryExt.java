@@ -40,6 +40,7 @@ public class MCountryExt extends X_C_Country implements Comparator<Object>, Seri
 	private String COLUMNNAME_HasMunicipality = "HasMunicipality";
 	private String COLUMNNAME_HasCommunity = "HasCommunity";
 	private String COLUMNNAME_IsCapitalize = "IsCapitalize";
+	private String COLUMNNAME_HasSuburb = "HasSuburb";
 
 	/**
      * 	Get Country (cached)
@@ -534,5 +535,26 @@ public class MCountryExt extends X_C_Country implements Comparator<Object>, Seri
 		return get_ValueAsBoolean(COLUMNNAME_IsCapitalize);
 	}
 
+	/** 
+	 * Set Country Municipality has Suburb.
+	 * @param hasSuburb Country Municipality has Suburb
+	 */
+	public void setHasSuburb (boolean hasSuburb) {
+		set_Value (COLUMNNAME_HasSuburb, Boolean.valueOf(hasSuburb));
+	}
+	
+	/**
+	 * Get if Country Has Suburb
+	 * @return true when Country Has Suburb
+	 */
+	public boolean isHasSuburb () {
+		Object oo = get_Value(COLUMNNAME_HasSuburb);
+		if (oo != null) {
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
 
 }
