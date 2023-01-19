@@ -35,13 +35,9 @@ public class DisplayTypeFactory implements IDisplayTypeFactory{
 	 */
     @Override
     public boolean isID(int p_displayType) {
-	    // TODO Auto-generated method stub
-//log.setLevel(Level.WARNING);
     	if(p_displayType == LocationExtended) {
-//log.warning("..........DisplayTypeFactory...........isID - LocationExtended "+LocationExtended);
     		return true;
     	} else {
-//log.warning("..........DisplayTypeFactory...........isID:"+p_displayType);
     		return false;
     	}
     }
@@ -50,8 +46,11 @@ public class DisplayTypeFactory implements IDisplayTypeFactory{
 	 */
     @Override
     public boolean isNumeric(int p_displayType) {
-	    // TODO Auto-generated method stub
-	    return false;
+    	if(p_displayType == LocationExtended) {
+    		return true;
+    	} else {
+    		return false;
+    	}
     }
 
 	/* (non-Javadoc)
@@ -68,15 +67,7 @@ public class DisplayTypeFactory implements IDisplayTypeFactory{
 	 */
     @Override
     public boolean isText(int p_displayType) {
-	    // TODO Auto-generated method stub
-    	if(p_displayType == LocationExtended) {
-//log.warning("..........DisplayTypeFactory...........");
-//log.warning("isText - LocationExtended"+LocationExtended);
-    		return false;
-    	} else {
-    		return false;
-    	}
-    	//return false;
+    	return false;
     }
 
 	/* (non-Javadoc)
@@ -84,7 +75,6 @@ public class DisplayTypeFactory implements IDisplayTypeFactory{
 	 */
     @Override
     public boolean isDate(int p_displayType) {
-	    // TODO Auto-generated method stub
 	    return false;
     }
 
@@ -129,10 +119,7 @@ public class DisplayTypeFactory implements IDisplayTypeFactory{
 	 */
     @Override
     public Class<?> getClass(int p_displayType, boolean p_yesNoAsBoolean) {
-	    // TODO Auto-generated method stub
     	if(p_displayType == LocationExtended) {
-//log.warning(".....................");
-//log.warning("getClass - LocationExtended"+LocationExtended);
     		return Integer.class;
     	}  else {
     		return null;

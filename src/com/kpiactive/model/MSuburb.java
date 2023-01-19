@@ -120,6 +120,7 @@ public class MSuburb extends X_C_Suburb implements I_C_Suburb {
 		List<MSuburb> list = new Query(ctx, MSuburb.Table_Name, "C_Municipality_ID=?", null)
 				.setOnlyActiveRecords(true)
 				.setParameters(C_Municipality_ID)
+				.setOrderBy(MSuburb.COLUMNNAME_Name)
 				.list();
 		
 		//  Sort it

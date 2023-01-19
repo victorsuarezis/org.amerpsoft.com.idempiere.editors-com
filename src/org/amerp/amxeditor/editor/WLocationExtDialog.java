@@ -1162,8 +1162,12 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		//  Country Changed - display in new Format
 		else if (lstCountry.equals(event.getTarget()))
 		{
+			if(lstCountry == null)
+				return;
 			inCountryAction = true;
 			MCountryExt c = (MCountryExt)lstCountry.getSelectedItem().getValue();
+			if(c == null)
+				return;
 			isAutomaticPostalCode = c.get_ValueAsBoolean("IsAutomaticPostalCode");
 			m_location.setCountry(c);
 			m_location.setC_City_ID(0);
@@ -1194,9 +1198,11 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		//  Region Changed 
 		else if (lstRegion.equals(event.getTarget()))
 		{
-			if (inCountryAction || inOKAction)
+			if (inCountryAction || inOKAction || lstRegion == null)
 				return;
 			MRegionExt r = (MRegionExt) lstRegion.getSelectedItem().getValue();
+			if(r == null)
+				return;
 			m_location.setC_Country_ID(r.getC_Country_ID());
 			m_location.setRegion(r);
 			m_location.setC_City_ID(0);
@@ -1208,9 +1214,11 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		//  Municipality Changed 
 		else if (lstMunicipality.equals(event.getTarget()))
 		{
-			if (inCountryAction || inOKAction)
+			if (inCountryAction || inOKAction || lstMunicipality == null)
 				return;
 			MMunicipality m = (MMunicipality) lstMunicipality.getSelectedItem().getValue();
+			if(m == null)
+				return;
 			m_location.setMunicipality(m);
 			m_location.setC_Parish_ID(0);
 			m_location.setParish(null);
@@ -1410,6 +1418,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		MMunicipality municipality = null;
 		MParish parish = null;
 		MSuburb suburb = null;
+		String postal = null;
 
 		if (lstRegion.getSelectedItem()!=null)
 			region = (MRegionExt)lstRegion.getSelectedItem().getValue();
@@ -1419,6 +1428,8 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			parish = (MParish)lstParish.getSelectedItem().getValue();
 		if(lstSuburb.getSelectedItem() != null)
 			suburb = (MSuburb)lstSuburb.getSelectedItem().getValue();
+		if(txtPostal.getText() != null)
+			postal = txtPostal.getText();
 		
 		MCountryExt c = (MCountryExt)lstCountry.getSelectedItem().getValue();
 
@@ -1440,6 +1451,8 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			address = address + (municipality.getName() != null ? municipality.getName() + ", " : "");
 		if (region != null)
 			address = address + (region.getName() != null ? region.getName() + ", " : "");
+		if(postal != null)
+			address = address + postal + ", ";
 		address = address + (c.getName() != null ? c.getName() : "");
 		//return address.replace(" ", "+");
 		return address;
