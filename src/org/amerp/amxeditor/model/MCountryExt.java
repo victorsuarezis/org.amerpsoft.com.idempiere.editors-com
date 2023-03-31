@@ -29,7 +29,7 @@ import org.compiere.util.*;
  * @author luisamesty
  *
  */
-public class MCountryExt extends X_C_Country implements Comparator<Object>, Serializable {
+public class MCountryExt extends MCountry implements Comparator<Object>, Serializable {
 
 	/**
 	 * 
@@ -285,15 +285,7 @@ public class MCountryExt extends X_C_Country implements Comparator<Object>, Seri
 	 */
 	public String toString()
 	{
-		if (getEnvLanguage() != null)
-		{
-			String nn = getTrlName();
-			if (nn != null)
-				return nn;
-			else return getName();
-				
-		}
-		return getName();
+		return super.getTrlName();
 	}   //  toString
 
 	/**

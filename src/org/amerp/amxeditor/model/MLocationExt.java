@@ -4,8 +4,6 @@
 
 package org.amerp.amxeditor.model;
 
-import java.io.File;
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,11 +16,11 @@ import org.compiere.model.MLocation;
 import org.compiere.model.MRegion;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.PO;
-import org.compiere.process.DocAction;
 import org.compiere.util.CCache;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 
 import com.kpiactive.model.MSuburb;
 
@@ -40,7 +38,7 @@ import com.kpiactive.model.MSuburb;
  * 		<li>BF [ 3002736 ] MLocation.get cache all MLocations
  * 			https://sourceforge.net/tracker/?func=detail&aid=3002736&group_id=176962&atid=879332
  */
-public class MLocationExt extends MLocation implements I_C_Location_Amerp, DocAction
+public class MLocationExt extends MLocation implements I_C_Location_Amerp
 {
 	/**
 	 * 
@@ -53,10 +51,12 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp, DocAc
 	public static String LOCATION_MAPS_SOURCE_ADDRESS      = MSysConfig.getValue("LOCATION_MAPS_SOURCE_ADDRESS");
 	public static String LOCATION_MAPS_DESTINATION_ADDRESS = MSysConfig.getValue("LOCATION_MAPS_DESTINATION_ADDRESS");
 	public static final String COLUMNNAME_C_Municipality_ID = "C_Municipality_ID";
-	//public static final String COLUMNNAME_MunicipalityName = "municipalityname";
 	public static final String COLUMNNAME_C_Parish_ID = "C_Parish_ID";
-	//public static final String COLUMNNAME_ParishName = "parishname";
 	public static final String COLUMNNAME_C_Suburb_ID = "C_Suburb_ID";
+	public static final String COLUMNAME_FullAddress =  "FullAddress";
+	public static final String COLUMNNAME_MunicipalityName = "MunicipalityName";
+	public static final String COLUMNNAME_SuburbName = "SuburbName";
+	public static final String COLUMNNAME_ParishName = "ParishName";
 	
 	static private 	MCountryExt		m_c = null;
 	private 	MRegionExt		m_r = null;
@@ -83,9 +83,46 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp, DocAc
 			if(getRegionName() != null)
 				setRegionName(getRegionName().toUpperCase());
 		}
-		return super.beforeSave(newRecord);
+		boolean checkCityRegion = super.beforeSave(newRecord);
+		
+		if(getC_Municipality_ID() > 0)
+			setMunicipalityName(getMunicipality().getName());
+		if(getC_Suburb_ID() > 0)
+			setSuburbName(getSuburb().getName());
+		if(getC_Parish_ID() > 0)
+			setParishName(getParish().getName());
+		
+		StringBuilder fullAddress = new StringBuilder("");
+		if(getAddress1() != null)
+			fullAddress.append(getAddress1()).append(", ");
+		if(getAddress2() != null)
+			fullAddress.append(getAddress2()).append(", ");
+		if(getAddress3() != null)
+			fullAddress.append(getAddress3()).append(", ");
+		if(getAddress4() != null)
+			fullAddress.append(getAddress4()).append(", ");
+		if(getAddress5() != null)
+			fullAddress.append(getAddress5()).append(", ");
+		if(getCity() != null)
+			fullAddress.append(getCity()).append(", ");
+		if(getRegionName() != null)
+			fullAddress.append(getRegionName()).append(", ");
+		if(getMunicipalityName() != null)
+			fullAddress.append(getMunicipalityName()).append(", ");
+		if(getSuburbName() != null)
+			fullAddress.append(getSuburbName()).append(", ");
+		if(getParishName() != null)
+			fullAddress.append(getParishName()).append(", ");
+		if(getPostal() != null)
+			fullAddress.append(getPostal()).append(", ");
+		if(getCountryName() != null)
+			fullAddress.append(getCountryName());
+		
+		setFullAddress(fullAddress.toString());
+		
+		return checkCityRegion;
 	}
-	
+
 	/**
 	 * 	After Save
 	 *	@param newRecord new
@@ -311,7 +348,7 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp, DocAc
 	 */
 	public String getCountryName()
 	{
-		return getCountry().getName();
+		return getCountryExt().toString();
 	}	//	getCountryName
 	/**
 	 * 	Get Country Line
@@ -424,8 +461,7 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp, DocAc
 	 */
 	public void setMunicipalityName (String MunicipalityName)
 	{
-		//set_Value (COLUMNNAME_MunicipalityName, MunicipalityName);
-		return;
+		set_Value (COLUMNNAME_MunicipalityName, MunicipalityName);
 	}
 	/**
 	 * setC_Municipality_ID
@@ -473,17 +509,15 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp, DocAc
 			set_Value (COLUMNNAME_C_Parish_ID, Integer.valueOf(C_Parish_ID));
 		
 	}
+	
 	/**
 	 * 	setParishName
 	 * @param ParishName
 	 */
 	public void setParishName (String ParishName)
 	{
-		//set_Value (COLUMNNAME_ParishName, ParishName);
-		return;
+		set_Value (COLUMNNAME_ParishName, ParishName);
 	}
-
-
 
 	/**
 	 * 	Get getMunicipality
@@ -584,7 +618,161 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp, DocAc
 		if (m_su == null && getC_Suburb_ID() != 0)
 			m_su = MSuburb.get(getCtx(), getC_Suburb_ID());
 		return m_su;
-	}	
+	}
+	
+	public String getSuburbName() {
+		return get_ValueAsString(COLUMNNAME_SuburbName);
+	}
+	
+	public void setSuburbName(String name) {
+		set_Value(COLUMNNAME_SuburbName, name);
+	}
+	
+	public String getMunicipalityName() {
+		return get_ValueAsString(COLUMNNAME_MunicipalityName);
+	}
+
+	public String getParishName() {
+		return get_ValueAsString(COLUMNNAME_ParishName);
+	}
+
+	public String getFullAddress() {
+		return get_ValueAsString(COLUMNAME_FullAddress);
+	}
+	
+	public void setFullAddress(String fullAddress) {
+		set_Value(COLUMNAME_FullAddress, fullAddress);
+	}
+	
+	/**************************************************************************
+	 *	Return printable String representation
+	 *  @return String
+	 */
+	public String toString()
+	{
+		StringBuilder retStr = new StringBuilder();
+		if (isAddressLinesReverse()) {
+			//	City, Region, Postal
+			retStr.append(parseCRP (getCountry()));
+			if(getMunicipalityName() != null && getMunicipalityName().length() > 0)
+				retStr.append(", ").append(getMunicipalityName());
+			if(getParishName() != null && getParishName().length() > 0)
+				retStr.append(", ").append(getParishName());
+			if(getSuburbName() != null && getSuburbName().length() > 0)
+				retStr.append(", ").append(getSuburbName());
+			if (getAddress5() != null && getAddress5().length() > 0)
+				retStr.append(", ").append(getAddress5());
+			if (getAddress4() != null && getAddress4().length() > 0)
+				retStr.append(", ").append(getAddress4());
+			if (getAddress3() != null && getAddress3().length() > 0)
+				retStr.append(", ").append(getAddress3());
+			if (getAddress2() != null && getAddress2().length() > 0)
+				retStr.append(", ").append(getAddress2());
+			if (getAddress1() != null)
+				retStr.append(", ").append(getAddress1());
+		} else {
+			if (getAddress1() != null)
+				retStr.append(getAddress1());
+			if (getAddress2() != null && getAddress2().length() > 0)
+				retStr.append(", ").append(getAddress2());
+			if (getAddress3() != null && getAddress3().length() > 0)
+				retStr.append(", ").append(getAddress3());
+			if (getAddress4() != null && getAddress4().length() > 0)
+				retStr.append(", ").append(getAddress4());
+			if (getAddress5() != null && getAddress5().length() > 0)
+				retStr.append(", ").append(getAddress5());
+			if(getSuburbName() != null && getSuburbName().length() > 0)
+				retStr.append(", ").append(getSuburbName());
+			if(getParishName() != null && getParishName().length() > 0)
+				retStr.append(", ").append(getParishName());
+			if(getMunicipalityName() != null && getMunicipalityName().length() > 0)
+				retStr.append(", ").append(getMunicipalityName());
+			
+			//	City, Region, Postal
+			retStr.append(", ").append(parseCRP (getCountry()));
+		}
+		return retStr.toString();
+	}	//	toString
+	
+	/**
+	 *	Parse according City/Postal/Region according to displaySequence.
+	 *	@C@ - City		@R@ - Region	@P@ - Postal  @A@ - PostalAdd
+	 *  @param c country
+	 *  @return parsed String
+	 */
+	private String parseCRP (MCountry c)
+	{
+		if (c == null)
+			return "CountryNotFound";
+
+		boolean local = MCountry.getDefault() != null && getC_Country_ID() == MCountry.getDefault().getC_Country_ID();
+		String inStr = local ? c.getDisplaySequenceLocal() : c.getDisplaySequence();
+		StringBuilder outStr = new StringBuilder();
+
+		String token;
+		int i = inStr.indexOf('@');
+		while (i != -1)
+		{
+			outStr.append (inStr.substring(0, i));			// up to @
+			inStr = inStr.substring(i+1, inStr.length());	// from first @
+
+			int j = inStr.indexOf('@');						// next @
+			if (j < 0)
+			{
+				token = "";									//	no second tag
+				j = i+1;
+			}
+			else
+				token = inStr.substring(0, j);
+			//	Tokens
+			if (token.equals("C"))
+			{
+				if (getCity() != null)
+					outStr.append(getCity());
+			}
+			else if (token.equals("R"))
+			{
+				if (getRegion() != null)					//	we have a region
+					outStr.append(getRegion().getTrlName());
+				else if (super.getRegionName() != null && super.getRegionName().length() > 0)
+					outStr.append(super.getRegionName());	//	local region name
+			}
+			else if (token.equals("P"))
+			{
+				if (getPostal() != null)
+					outStr.append(getPostal());
+			}
+			else if (token.equals("A"))
+			{
+				String add = getPostal_Add();
+				if (add != null && add.length() > 0)
+					outStr.append("-").append(add);
+			}
+			else
+				outStr.append("@").append(token).append("@");
+
+			inStr = inStr.substring(j+1, inStr.length());	// from second @
+			i = inStr.indexOf('@');
+		}
+		outStr.append(inStr);						// add the rest of the string
+
+		//	Print Region Name if entered and not part of pattern
+		if (c.getDisplaySequence().indexOf("@R@") == -1
+			&& super.getRegionName() != null && super.getRegionName().length() > 0) {
+            
+			String regName =null;
+            if(getRegion()!=null)
+                regName =getRegion().getTrlName();
+            else
+                regName =super.getRegionName();
+            
+            outStr.append(" ").append(regName);
+		}
+
+		String retValue = Util.replace(outStr.toString(), "\\n", "\n");
+		if (log.isLoggable(Level.FINEST)) log.finest("parseCRP - " + c.getDisplaySequence() + " -> " +  retValue);
+		return retValue;
+	}	//	parseContext
 
 	/**
 	 * 	Get (local) Region Name
@@ -947,280 +1135,6 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp, DocAc
 		return address.replace(" ", "+");
 	}
 
-	@Override
-	public void setDocStatus(String newStatus) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public String getDocStatus() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean processIt(String action) throws Exception {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean unlockIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean invalidateIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public String prepareIt() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean approveIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean rejectIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public String completeIt() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean voidIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean closeIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean reverseCorrectIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean reverseAccrualIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean reActivateIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public String getSummary() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getDocumentNo() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getDocumentInfo() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public File createPDF() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getProcessMsg() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public int getDoc_User_ID() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int getC_Currency_ID() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public BigDecimal getApprovalAmt() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getDocAction() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 */
 
-	@Override
-	public void setDocStatus(String newStatus) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public String getDocStatus() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean processIt(String action) throws Exception {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean unlockIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean invalidateIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public String prepareIt() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean approveIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean rejectIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public String completeIt() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean voidIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean closeIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean reverseCorrectIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean reverseAccrualIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean reActivateIt() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public String getSummary() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getDocumentNo() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getDocumentInfo() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public File createPDF() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getProcessMsg() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public int getDoc_User_ID() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int getC_Currency_ID() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public BigDecimal getApprovalAmt() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getDocAction() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }	//	MLocation
