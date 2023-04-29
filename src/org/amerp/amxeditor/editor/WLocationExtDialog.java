@@ -69,6 +69,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 	private static final long serialVersionUID = 5368065537791919302L;
 	
 	private static final String LABEL_STYLE = "white-space: nowrap;";
+	private static final String LABEL_STYLE_WRAP = "white-space: wrap;";
 	/** Logger          */
 	private static CLogger log = CLogger.getCLogger(WLocationExtDialog.class);
 	private Label lblAddress1;
@@ -148,6 +149,11 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 	private boolean onSaveError = false;
 	
 	private boolean isAutomaticPostalCode = false;
+	private Label lblFullAddress;
+	private Textbox txtFullAddress;
+	
+	private boolean isLocationNew = false;
+	
 	Row pnlCity = null;
 	//END
 
@@ -162,10 +168,13 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		if (m_location == null)
 			m_location = new MLocationExt (Env.getCtx(), 0, null);
 		//  Overwrite title 
-		if (m_location.getC_Location_ID() == 0)
+		if (m_location.getC_Location_ID() == 0) {
 			setTitle("Ext-"+Msg.getMsg(Env.getCtx(), "LocationNew"));
-		else
-			setTitle("Ext-"+Msg.getMsg(Env.getCtx(), "LocationUpdate"));    
+			isLocationNew = true;
+		} else {
+			setTitle("Ext-"+Msg.getMsg(Env.getCtx(), "LocationUpdate"));
+			isLocationNew = false;
+		}
 		//
 		// Reset TAB_INFO context
 		Env.setContext(Env.getCtx(), m_WindowNo, Env.TAB_INFO, "C_Region_ID", null);
@@ -224,11 +233,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		setParish();
 		
 		// Suburb	
-		lstSuburb.appendItem("", null); 
-		for (MSuburb suburb : MSuburb.getSQLSuburbs(Env.getCtx(), m_selectedMunicipality_ID)) {
-			lstSuburb.appendItem(suburb.getName(), suburb);
-		}
-		setSuburb();
+		setSuburb(m_selectedMunicipality_ID);
 		
 		// initLocation First Time
 		initLocation();
@@ -236,7 +241,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		if (!ThemeManager.isUseCSSForWindowSize()) 
 		{
 			ZKUpdateUtil.setWindowWidthX(this, 380);
-			ZKUpdateUtil.setWindowHeightX(this, 420); // required fixed height for ZK to auto adjust the position based on available space
+			ZKUpdateUtil.setWindowHeightX(this, 500); // required fixed height for ZK to auto adjust the position based on available space
 		}
 		else
 		{
@@ -246,8 +251,8 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			});
 		}
 		//
-		ZKUpdateUtil.setWidth(this,"350px");
-		ZKUpdateUtil.setHeight(this, "420px");
+		ZKUpdateUtil.setWidth(this,"380px");
+		ZKUpdateUtil.setHeight(this, "500px");
 		this.setSclass("popup-dialog");
 		this.setClosable(true);
 		this.setBorder("normal");
@@ -286,7 +291,8 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		lblParish		= new Label(Msg.getElement(Env.getCtx(), "C_Parish_ID"));
 		lblParish.setStyle(LABEL_STYLE);
 		lblSuburb		= new Label(Msg.getElement(Env.getCtx(), MSuburb.COLUMNNAME_C_Suburb_ID));
-		lblSuburb.setStyle(LABEL_STYLE);
+		lblFullAddress     = new Label(Msg.getElement(Env.getCtx(), "FullAddress"));
+		lblFullAddress.setStyle(LABEL_STYLE_WRAP);
 		
 		txtAddress1 = new Textbox();
 		txtAddress1.setCols(20);
@@ -321,6 +327,12 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		txtPostalAdd = new Textbox();
 		txtPostalAdd.setCols(20);
 		txtPostalAdd.setMaxlength(MLocationExt.getFieldLength(MLocationExt.COLUMNNAME_Postal_Add));
+		
+		txtFullAddress = new Textbox();
+		txtFullAddress.setCols(60);
+		txtFullAddress.setRows(3);
+		txtFullAddress.setMaxlength(MLocationExt.getFieldLength(MLocationExt.COLUMNAME_FullAddress));
+		txtFullAddress.setEnabled(false);
 
 		lstRegion    = new Listbox();
 		lstRegion.setMold("select");
@@ -478,6 +490,11 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		pnlCountry.appendChild(lstCountry);
 		//lstCountry.setHflex("1");
 		ZKUpdateUtil.setHflex(lstCountry, "1");
+		
+		Row pnlFullAddress = new Row();
+		pnlFullAddress.appendChild(lblFullAddress.rightAlign());
+		pnlFullAddress.appendChild(txtFullAddress);
+		ZKUpdateUtil.setHflex(txtFullAddress, "1");
 		
 		Panel pnlLinks    = new Panel();
 		pnlLinks.appendChild(toLink);
@@ -729,13 +746,8 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			}
 			
 			lstSuburb.getChildren().clear();
-			lstSuburb.appendItem("", null);
-			if(country.isHasSuburb()) {
-				for (MSuburb suburb : MSuburb.getSQLSuburbs(Env.getCtx(), m_location.getC_Municipality_ID())) {
-					lstSuburb.appendItem(suburb.getName(), suburb);
-				}
-				setSuburb();
-			}
+			if(country.isHasSuburb()) 
+				setSuburb(m_location.getC_Municipality_ID());
 			
 			s_oldMunicipality_ID = m_location.getC_Municipality_ID();
 		}
@@ -802,7 +814,8 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			} else if (s.startsWith("SU") && s.trim().equalsIgnoreCase("SU") && m_location.getCountryExt().isHasSuburb()) {
 				addComponents((Row)lstSuburb.getParent());
 				isSuburbMandatory = s.endsWith("!");
-			}
+			} else if(s.startsWith("FA"))
+				addComponents((Row) txtFullAddress.getParent());
 			// NEW FIELDS ELEMENTS
 			if (m_location.getCountryExt().isHasRegion()) {
 				
@@ -833,6 +846,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 				setRegion();                
 			}
 			setCountry();
+			txtFullAddress.setText(m_location.getFullAddress());
 		}
 //log.warning("m_location.initLocation  END..City:"+m_location.getC_City_ID()+"-"+m_location.getCity()+
 //				"..Country:"+m_location.getC_Country_ID()+"..Region:"+m_location.getC_Region_ID()+
@@ -929,18 +943,18 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 	/**
 	 * Set Suburb
 	 */
-	private void setSuburb() {
-		if (m_location.getSuburb() != null) {
-			List<?> listSub = lstSuburb.getChildren();
-			Iterator<?> iter = listSub.iterator();
-			while (iter.hasNext()) {
-				ListItem listitem = (ListItem)iter.next();
-				if (m_location.getSuburb().equals(listitem.getValue())) {
-					lstSuburb.setSelectedItem(listitem);
-				}
-			}
-		} else {
+	private void setSuburb(int C_Municipality_ID) {
+		lstSuburb.appendItem("", null); 
+		int index = 1;
+		MSuburb actualSuburb = m_location.getSuburb();
+		if(actualSuburb == null)
 			lstSuburb.setSelectedItem(null);
+		MSuburb[] suburbs = MSuburb.getSQLSuburbs(Env.getCtx(), C_Municipality_ID);
+		for (MSuburb suburb : suburbs) {
+			lstSuburb.appendItem(suburb.getName(), suburb);
+			if(actualSuburb != null && actualSuburb.getName().equals(suburb.getName()))
+				lstSuburb.setSelectedIndex(index);
+			index++;
 		}
 	}
 	
@@ -1023,7 +1037,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		}
 		else if (toLink.equals(event.getTarget()))
 		{
-			String urlString = MLocationExt.LOCATION_MAPS_URL_PREFIX + getFullAdress();
+			String urlString = MLocationExt.LOCATION_MAPS_URL_PREFIX + getFullAddress();
 			String message = null;
 			try {
 				Executions.getCurrent().sendRedirect(urlString, "_blank");
@@ -1042,7 +1056,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 
 				String urlString = MLocationExt.LOCATION_MAPS_ROUTE_PREFIX +
 						         MLocationExt.LOCATION_MAPS_SOURCE_ADDRESS + orgLocation.getMapsLocation() + //org
-						         MLocationExt.LOCATION_MAPS_DESTINATION_ADDRESS + getFullAdress(); //partner
+						         MLocationExt.LOCATION_MAPS_DESTINATION_ADDRESS + getFullAddress(); //partner
 				String message = null;
 				try {
 					Executions.getCurrent().sendRedirect(urlString, "_blank");
@@ -1412,7 +1426,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 	}
 	
 	/** returns a string that contains all fields of current form */
-	String getFullAdress()
+	String getFullAddress()
 	{
 		MRegionExt region = null;
 		MMunicipality municipality = null;

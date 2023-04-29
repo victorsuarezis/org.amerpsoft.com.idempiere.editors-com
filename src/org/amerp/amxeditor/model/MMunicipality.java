@@ -9,6 +9,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.logging.Level;
 
+import org.compiere.model.Query;
 import org.compiere.process.DocAction;
 import org.compiere.util.*;
 import org.amerp.amxeditor.model.MMunicipality;
@@ -122,7 +123,7 @@ public class MMunicipality extends X_C_Municipality implements DocAction {
 			loadAllMunicipalitys(ctx);
 		ArrayList<MMunicipality> list = new ArrayList<MMunicipality>();
 		
-		Iterator it = s_Municipalitys.values().iterator();
+		Iterator<MMunicipality> it = s_Municipalitys.values().iterator();
 		while (it.hasNext())
 		{
 			MMunicipality r = (MMunicipality)it.next();
@@ -145,33 +146,19 @@ public class MMunicipality extends X_C_Municipality implements DocAction {
 	//@SuppressWarnings("unchecked")
 	public static MMunicipality[] getSQLMunicipalitys (Properties ctx, int C_Region_ID)
 	{
-		if (s_Municipalitys == null || s_Municipalitys.size() == 0)
-		loadAllMunicipalitys(ctx);
-		ArrayList<MMunicipality> list = new ArrayList<MMunicipality>();
-		String sql = "SELECT * FROM C_Municipality "+
-				" WHERE IsActive='Y' "+
-				" AND C_Region_ID="+C_Region_ID ;
-		try
-		{
-			Statement stmt = DB.createStatement();
-			ResultSet rs = stmt.executeQuery(sql);
-			while(rs.next())
-			{
-				MMunicipality r = new MMunicipality (ctx, rs, null);
-				if (r.getC_Region_ID()==C_Region_ID)
-					list.add(r);
-			}
-			rs.close();
-			stmt.close();
-		}
-		catch (SQLException e)
-		{
-			s_log.log(Level.SEVERE, sql, e);
-		}
+//		if (s_Municipalitys == null || s_Municipalitys.size() == 0)
+//			loadAllMunicipalitys(ctx);
+
+		List<MMunicipality> list = new Query(ctx, MMunicipality.Table_Name, "C_Region_ID =?", null)
+				.setOnlyActiveRecords(true)
+				.setParameters(C_Region_ID)
+				.setOrderBy(COLUMNNAME_Name)
+				.list();
+		
 		//  Sort it
 		MMunicipality[] retValue = new MMunicipality[list.size()];
 		list.toArray(retValue);
-		Arrays.sort(retValue, new MMunicipality(ctx, 0, null));
+		//Arrays.sort(retValue, new MMunicipality(ctx, 0, null));
 		return retValue;
 	}	//	getSQLMunicipalitys
 	

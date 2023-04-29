@@ -83,8 +83,13 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp
 			if(getRegionName() != null)
 				setRegionName(getRegionName().toUpperCase());
 		}
+		String regionName = getRegionName();
 		boolean checkCityRegion = super.beforeSave(newRecord);
 		
+		if(getC_Region_ID() > 0)
+			setRegionName(getC_Region().getName());
+		else if(regionName != null)
+			setRegionName(regionName);
 		if(getC_Municipality_ID() > 0)
 			setMunicipalityName(getMunicipality().getName());
 		if(getC_Suburb_ID() > 0)
@@ -748,6 +753,19 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp
 				if (add != null && add.length() > 0)
 					outStr.append("-").append(add);
 			}
+			else if(token.equals("MU")) {
+				if(getMunicipalityName() != null)
+					outStr.append(getMunicipalityName());
+			}
+			else if(token.equals("SU")) {
+				if(getSuburbName() != null)
+					outStr.append(getSuburbName());
+			}
+			else if(token.equals("PA")) {
+				if(getParishName() != null)
+					outStr.append(getParishName());
+			}
+		
 			else
 				outStr.append("@").append(token).append("@");
 

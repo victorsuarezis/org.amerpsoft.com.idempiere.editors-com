@@ -12,8 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
-
-import org.compiere.model.Query;
 import org.compiere.util.CCache;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
@@ -27,7 +25,7 @@ public class MSuburb extends X_C_Suburb implements I_C_Suburb {
 	private static final long serialVersionUID = -8980717791785580736L;
 	
 	/**	Suburb Cache				*/
-	private static CCache<String,MSuburb> s_Suburbs = null;
+	private static CCache<String,MSuburb> s_Suburbs = new CCache<String,MSuburb>("C_Suburb", 500);
 	/**	Static Logger				*/
 	private static CLogger		s_log = CLogger.getCLogger (MSuburb.class);
 
@@ -67,8 +65,7 @@ public class MSuburb extends X_C_Suburb implements I_C_Suburb {
 	 *	@param ctx context
 	 */
 	private static void loadAllSuburbs(Properties ctx) {
-		s_Suburbs = new CCache<String,MSuburb>("C_Suburb", 500);
-		String sql = "SELECT * FROM C_Suburb WHERE IsActive='Y'";
+		String sql = "SELECT * FROM C_Suburb WHERE IsActive='Y' ORDER BY Name";
 		try {
 			Statement stmt = DB.createStatement();
 			ResultSet rs = stmt.executeQuery(sql);
@@ -114,19 +111,31 @@ public class MSuburb extends X_C_Suburb implements I_C_Suburb {
 	 * @return
 	 */
 	public static MSuburb[] getSQLSuburbs (Properties ctx, int C_Municipality_ID) {
-		if (s_Suburbs == null || s_Suburbs.size() == 0)
-			loadAllSuburbs(ctx);
+		if(C_Municipality_ID <= 0)
+			return new MSuburb[0];
 		
-		List<MSuburb> list = new Query(ctx, MSuburb.Table_Name, "C_Municipality_ID=?", null)
-				.setOnlyActiveRecords(true)
-				.setParameters(C_Municipality_ID)
-				.setOrderBy(MSuburb.COLUMNNAME_Name)
-				.list();
+		List<MSuburb> list = new ArrayList<>();
 		
-		//  Sort it
+		String sql = "SELECT DISTINCT ON (Name) Name, * FROM C_Suburb "
+				+ " WHERE IsActive='Y' AND C_Municipality_ID = " + C_Municipality_ID
+				+ " ORDER BY Name ";
+		try {
+			Statement stmt = DB.createStatement();
+			ResultSet rs = stmt.executeQuery(sql);
+			while(rs.next()) {
+				MSuburb r = new MSuburb(ctx, rs, null);
+				s_Suburbs.put(String.valueOf(r.getC_Suburb_ID()), r);
+				list.add(r);
+			}
+			rs.close();
+			stmt.close();
+		}
+		catch (SQLException e) {
+			s_log.log(Level.SEVERE, sql, e);
+		}
+
 		MSuburb[] retValue = new MSuburb[list.size()];
 		list.toArray(retValue);
-		Arrays.sort(retValue, new MSuburb(ctx, 0, null));
 		return retValue;
 	}	//	getSQLSuburubs
 	
@@ -137,18 +146,18 @@ public class MSuburb extends X_C_Suburb implements I_C_Suburb {
 	 *	@return MSuburb
 	 */
 	public static MSuburb get (Properties ctx, int C_Suburb_ID) {
-		if (s_Suburbs == null || s_Suburbs.size() == 0)
-			loadAllSuburbs(ctx);
+//		if (s_Suburbs == null || s_Suburbs.size() == 0)
+//			loadAllSuburbs(ctx);
+//		String key = String.valueOf(C_Suburb_ID);
+//		MSuburb sub = (MSuburb)s_Suburbs.get(key);
+//		if (sub != null)
+//			return sub;
+		if(C_Suburb_ID <=0)
+			return null;
+		MSuburb sub = new MSuburb(ctx, C_Suburb_ID, null);
 		String key = String.valueOf(C_Suburb_ID);
-		MSuburb sub = (MSuburb)s_Suburbs.get(key);
-		if (sub != null)
-			return sub;
-		sub = new MSuburb(ctx, C_Suburb_ID, null);
-		if (sub.getC_Suburb_ID() == C_Suburb_ID) {
-			s_Suburbs.put(key, sub);
-			return sub;
-		}
-		return null;
+		s_Suburbs.put(key, sub);
+		return sub;
 	}	//	get
 
 
