@@ -41,6 +41,7 @@ public class MCountryExt extends MCountry implements Comparator<Object>, Seriali
 	private String COLUMNNAME_HasCommunity = "HasCommunity";
 	private String COLUMNNAME_IsCapitalize = "IsCapitalize";
 	private String COLUMNNAME_HasSuburb = "HasSuburb";
+	private String COLUMNNAME_CountryCode3 = "CountryCode3";
 
 	/**
      * 	Get Country (cached)
@@ -519,10 +520,18 @@ public class MCountryExt extends MCountry implements Comparator<Object>, Seriali
 		return false;
 	}
 	
+	/**
+	 * Set is Capitalize
+	 * @param isCapitalize
+	 */
 	public void setIsCapitalize(boolean isCapitalize) {
 		set_Value(COLUMNNAME_IsCapitalize, isCapitalize);
 	}
 
+	/**
+	 * Get Is Capitalize
+	 * @return
+	 */
 	public boolean isCapitalize() {
 		return get_ValueAsBoolean(COLUMNNAME_IsCapitalize);
 	}
@@ -547,6 +556,22 @@ public class MCountryExt extends MCountry implements Comparator<Object>, Seriali
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+	
+	/**
+	 * Set Country Code 3
+	 * @param countryCode3
+	 */
+	public void setCountryCode3(String countryCode3) {
+		set_Value(COLUMNNAME_CountryCode3, countryCode3);
+	}
+	
+	/**
+	 * Get Country Code 3
+	 * @return
+	 */
+	public String getCountryCode3() {
+		return get_ValueAsString(COLUMNNAME_CountryCode3);
 	}
 
 }
