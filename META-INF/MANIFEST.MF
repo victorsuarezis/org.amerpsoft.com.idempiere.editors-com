@@ -29,4 +29,5 @@ Bundle-Vendor: Amerpsoft
 Bundle-ClassPath: .
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.adempiere.plugin.utils.Incremental2PackActivator
-Export-Package: org.amerp.amxeditor.model
+Export-Package: com.kpiactive.model,
+ org.amerp.amxeditor.model
