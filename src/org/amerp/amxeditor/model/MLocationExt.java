@@ -99,30 +99,30 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp
 		
 		if(!is_ValueChanged(COLUMNAME_FullAddress)) {
 			StringBuilder fullAddress = new StringBuilder("");
-			if(getAddress1() != null)
-				fullAddress.append(getAddress1()).append(", ");
-			if(getAddress2() != null)
-				fullAddress.append(getAddress2()).append(", ");
-			if(getAddress3() != null)
-				fullAddress.append(getAddress3()).append(", ");
-			if(getAddress4() != null)
-				fullAddress.append(getAddress4()).append(", ");
-			if(getAddress5() != null)
-				fullAddress.append(getAddress5()).append(", ");
-			if(getCity() != null)
-				fullAddress.append(getCity()).append(", ");
-			if(getRegionName() != null)
-				fullAddress.append(getRegionName()).append(", ");
-			if(getMunicipalityName() != null)
-				fullAddress.append(getMunicipalityName()).append(", ");
-			if(getSuburbName() != null)
-				fullAddress.append(getSuburbName()).append(", ");
-			if(getParishName() != null)
-				fullAddress.append(getParishName()).append(", ");
-			if(getPostal() != null)
-				fullAddress.append(getPostal()).append(", ");
-			if(getCountryName() != null)
-				fullAddress.append(getCountryName());
+			if(!Util.isEmpty(getAddress1(), true))
+				fullAddress.append(getAddress1());
+			if(!Util.isEmpty(getAddress2(), true))
+				fullAddress.append(", ").append(getAddress2());
+			if(!Util.isEmpty(getAddress3(), true))
+				fullAddress.append(", ").append(getAddress3());
+			if(!Util.isEmpty(getAddress4(), true))
+				fullAddress.append(", ").append(getAddress4());
+			if(!Util.isEmpty(getAddress5(),true))
+				fullAddress.append(", ").append(getAddress5());
+			if(!Util.isEmpty(getCity(), true))
+				fullAddress.append(", ").append(getCity());
+			if(!Util.isEmpty(getRegionName(), true))
+				fullAddress.append(", ").append(getRegionName());
+			if(!Util.isEmpty(getMunicipalityName(), true))
+				fullAddress.append(", ").append(getMunicipalityName());
+			if(!Util.isEmpty(getSuburbName(), true))
+				fullAddress.append(", ").append(getSuburbName());
+			if(!Util.isEmpty(getParishName(), true))
+				fullAddress.append(", ").append(getParishName());
+			if(!Util.isEmpty(getPostal(), true))
+				fullAddress.append(", ").append(getPostal());
+			if(!Util.isEmpty(getCountryName(), true))
+				fullAddress.append(", ").append(getCountryName());
 			
 			setFullAddress(fullAddress.toString());
 		}
