@@ -100,29 +100,29 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp
 		if(!is_ValueChanged(COLUMNAME_FullAddress)) {
 			StringBuilder fullAddress = new StringBuilder("");
 			if(!Util.isEmpty(getAddress1(), true))
-				fullAddress.append(getAddress1());
+				fullAddress.append(getAddress1().trim());
 			if(!Util.isEmpty(getAddress2(), true))
-				fullAddress.append(", ").append(getAddress2());
+				fullAddress.append(", ").append(getAddress2().trim());
 			if(!Util.isEmpty(getAddress3(), true))
-				fullAddress.append(", ").append(getAddress3());
+				fullAddress.append(", ").append(getAddress3().trim());
 			if(!Util.isEmpty(getAddress4(), true))
-				fullAddress.append(", ").append(getAddress4());
+				fullAddress.append(", ").append(getAddress4().trim());
 			if(!Util.isEmpty(getAddress5(),true))
-				fullAddress.append(", ").append(getAddress5());
+				fullAddress.append(", ").append(getAddress5().trim());
 			if(!Util.isEmpty(getCity(), true))
-				fullAddress.append(", ").append(getCity());
+				fullAddress.append(", ").append(getCity().trim());
 			if(!Util.isEmpty(getRegionName(), true))
-				fullAddress.append(", ").append(getRegionName());
+				fullAddress.append(", ").append(getRegionName().trim());
 			if(!Util.isEmpty(getMunicipalityName(), true))
 				fullAddress.append(", ").append(getMunicipalityName());
 			if(!Util.isEmpty(getSuburbName(), true))
-				fullAddress.append(", ").append(getSuburbName());
+				fullAddress.append(", ").append(getSuburbName().trim());
 			if(!Util.isEmpty(getParishName(), true))
-				fullAddress.append(", ").append(getParishName());
+				fullAddress.append(", ").append(getParishName().trim());
 			if(!Util.isEmpty(getPostal(), true))
-				fullAddress.append(", ").append(getPostal());
+				fullAddress.append(", ").append(getPostal().trim());
 			if(!Util.isEmpty(getCountryName(), true))
-				fullAddress.append(", ").append(getCountryName());
+				fullAddress.append(", ").append(getCountryName().trim());
 			
 			setFullAddress(fullAddress.toString());
 		}
