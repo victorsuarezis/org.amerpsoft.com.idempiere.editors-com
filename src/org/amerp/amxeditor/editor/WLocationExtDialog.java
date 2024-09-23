@@ -79,6 +79,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 	private Label lblCity;
 	private Label lblZip;
 	private Label lblRegion;
+	private Label lblRegionName;
 	private Label lblPostal;
 	private Label lblPostalAdd;
 	private Label lblCountry;
@@ -97,6 +98,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 	private Textbox txtPostal;
 	private Textbox txtPostalAdd;
 	private Listbox lstRegion;
+	private Textbox txtRegionName;
 	private Listbox lstCountry;
 	// ADDED FIELDS
 	private Listbox lstMunicipality;
@@ -122,6 +124,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 
 	private boolean isCityMandatory = false;
 	private boolean isRegionMandatory = false;
+	private boolean isRegionNameMandatory = false;
 	private boolean isAddress1Mandatory = false;
 	private boolean isAddress2Mandatory = false;
 	private boolean isAddress3Mandatory = false;
@@ -152,7 +155,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 	private Label lblFullAddress;
 	private Textbox txtFullAddress;
 	
-	private boolean isLocationNew = false;
+//	private boolean isLocationNew = false;
 	
 	Row pnlCity = null;
 	//END
@@ -170,10 +173,10 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		//  Overwrite title 
 		if (m_location.getC_Location_ID() == 0) {
 			setTitle("Ext-"+Msg.getMsg(Env.getCtx(), "LocationNew"));
-			isLocationNew = true;
+//			isLocationNew = true;
 		} else {
 			setTitle("Ext-"+Msg.getMsg(Env.getCtx(), "LocationUpdate"));
-			isLocationNew = false;
+//			isLocationNew = false;
 		}
 		//
 		// Reset TAB_INFO context
@@ -280,6 +283,8 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		lblZip.setStyle(LABEL_STYLE);
 		lblRegion       = new Label(Msg.getMsg(Env.getCtx(), "Region"));
 		lblRegion.setStyle(LABEL_STYLE);
+		lblRegionName = new Label(Msg.getElement(Env.getCtx(), MLocationExt.COLUMNNAME_RegionName));
+		lblRegionName.setStyle(LABEL_STYLE);
 		lblPostal       = new Label(Msg.getMsg(Env.getCtx(), "Postal"));
 		lblPostal.setStyle(LABEL_STYLE);
 		lblPostalAdd    = new Label(Msg.getMsg(Env.getCtx(), "PostalAdd"));
@@ -306,6 +311,9 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		txtAddress4 = new Textbox();
 		txtAddress4.setCols(20);
 		txtAddress4.setMaxlength(MLocationExt.getFieldLength(MLocationExt.COLUMNNAME_Address4));
+		txtRegionName = new Textbox();
+		txtRegionName.setCols(20);
+		txtRegionName.setMaxlength(MLocationExt.getFieldLength(MLocationExt.COLUMNNAME_RegionName));
 
 		//autocomplete City
 		MLookup lookupCity = MLookupFactory.get(Env.getCtx(), m_WindowNo, 0, DisplayType.TableDir, Env.getLanguage(Env.getCtx()),
@@ -484,6 +492,12 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		pnlRegion.appendChild(lstRegion);
 		//lstRegion.setHflex("1");
 		ZKUpdateUtil.setHflex(lstRegion, "1");
+		
+		Row pnlRegionName = new Row();
+		pnlRegionName.appendChild(lblRegionName.rightAlign());
+		pnlRegionName.appendChild(txtRegionName);
+		//txtAddress4.setHflex("1");
+		ZKUpdateUtil.setHflex(txtRegionName, "1");
 		
 		Row pnlCountry  = new Row();
 		pnlCountry.appendChild(lblCountry.rightAlign());
@@ -685,7 +699,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			setRegion();
 		} else {
 			lstRegion.setSelectedItem(null);
-			m_location.setC_Region_ID(0);
+			//m_location.setC_Region_ID(0);
 		}
 
 		if (country.isHasRegion() && m_location.getC_Region_ID() > 0)
@@ -763,6 +777,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		}
 		isCityMandatory = false;
 		isRegionMandatory = false;
+		isRegionNameMandatory = false;
 		isAddress1Mandatory = false;
 		isAddress2Mandatory = false;
 		isAddress3Mandatory = false;
@@ -811,6 +826,9 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			} else if (s.startsWith("R") && m_location.getCountryExt().isHasRegion()) {
 				addComponents((Row)lstRegion.getParent());
 				isRegionMandatory = s.endsWith("!");
+			} else if(s.startsWith("NR") && m_location.getCountryExt().isHasRegion()) {
+				addComponents((Row)txtRegionName.getParent());
+				isRegionNameMandatory = s.endsWith("!");
 			} else if (s.startsWith("SU") && s.trim().equalsIgnoreCase("SU") && m_location.getCountryExt().isHasSuburb()) {
 				addComponents((Row)lstSuburb.getParent());
 				isSuburbMandatory = s.endsWith("!");
@@ -842,8 +860,9 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 					lblRegion.setValue(m_location.getCountryExt().get_Translation(MCountryExt.COLUMNNAME_RegionName));
 				else
 					lblRegion.setValue(Msg.getMsg(Env.getCtx(), "Region"));
-
-				setRegion();                
+				
+				txtRegionName.setText(m_location.getRegionName());
+				setRegion();         
 			}
 			setCountry();
 			txtFullAddress.setText(m_location.getFullAddress());
@@ -1125,15 +1144,21 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			//  Country/Region
 			MCountryExt country = (MCountryExt) lstCountry.getSelectedItem().getValue();
 			m_location.setCountry(country);
-			if (country.isHasRegion() && lstRegion.getSelectedItem() != null)
-			{
-				MRegionExt r = (MRegionExt)lstRegion.getSelectedItem().getValue();
-				m_location.setRegion(r);
-			}
-			else
-			{
+			if(country.isHasRegion()) {
+				if(lstRegion.getSelectedItem() == null) {
+					m_location.setC_Region_ID(0);
+					if(txtRegionName.getText() != null)
+						m_location.setRegionName(txtRegionName.getText());
+					else 
+						m_location.setRegionName(null);
+				} else {
+					MRegionExt r = (MRegionExt)lstRegion.getSelectedItem().getValue();
+					m_location.setRegion(r);
+				}
+			} else {
 				m_location.setC_Region_ID(0);
-			}			
+				m_location.setRegionName(null);
+			}
 				
 			MAddressValidationExt validation = lstAddressValidation.getSelectedItem().getValue();
 			if (validation == null && lstAddressValidation.getChildren().size() > 0)
@@ -1169,8 +1194,6 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			}
 			
 			inOKAction = false;
-			
-
 			btnOnline.setEnabled(true);
 		}
 		//  Country Changed - display in new Format
@@ -1287,6 +1310,9 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		if (isRegionMandatory && lstRegion.getSelectedItem() == null) {
 			fields = fields + " " + "@Region@, ";
 		}
+		if (isRegionNameMandatory && txtRegionName.getText().trim().length() == 0) {
+			fields = fields + " " + "@RegionName@, ";
+		}
 		if (isSuburbMandatory && lstSuburb.getName().trim().length() == 0) {
 			fields = fields + " " + "@Suburb@, ";
 		}
@@ -1341,6 +1367,9 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		MCountryExt country = (MCountryExt)lstCountry.getSelectedItem().getValue();
 		m_location.setCountry(country);
 		if (country.isHasRegion() ) {
+			if(txtRegionName.getText() == null)
+				m_location.setRegionName(null);
+			
 			//if (!lstRegion.getSelectedItem().equals(null)) {
 			if (lstRegion.getSelectedItem() != null) {
 				MRegionExt r = (MRegionExt)lstRegion.getSelectedItem().getValue();
@@ -1352,8 +1381,11 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			} else {
 				m_location.setC_Region_ID(0);
 			}
+			if(lstRegion.getSelectedItem() == null && txtRegionName.getText() != null)
+				m_location.setRegionName(txtRegionName.getText());
 		} else {
 			m_location.setC_Region_ID(0);
+			m_location.setRegionName(null);
 		}
 		// Municipality
 		if (lstMunicipality.getSelectedItem() != null ) {
@@ -1433,6 +1465,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		MParish parish = null;
 		MSuburb suburb = null;
 		String postal = null;
+		String regionName = null;
 
 		if (lstRegion.getSelectedItem()!=null)
 			region = (MRegionExt)lstRegion.getSelectedItem().getValue();
@@ -1444,6 +1477,8 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			suburb = (MSuburb)lstSuburb.getSelectedItem().getValue();
 		if(txtPostal.getText() != null)
 			postal = txtPostal.getText();
+		if(txtRegionName.getText() != null)
+			regionName = txtRegionName.getText();
 		
 		MCountryExt c = (MCountryExt)lstCountry.getSelectedItem().getValue();
 
@@ -1465,6 +1500,8 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			address = address + (municipality.getName() != null ? municipality.getName() + ", " : "");
 		if (region != null)
 			address = address + (region.getName() != null ? region.getName() + ", " : "");
+		if(regionName != null)
+			address = address + regionName + ", "; 
 		if(postal != null)
 			address = address + postal + ", ";
 		address = address + (c.getName() != null ? c.getName() : "");

@@ -38,7 +38,7 @@ import com.kpiactive.model.MSuburb;
  * 		<li>BF [ 3002736 ] MLocation.get cache all MLocations
  * 			https://sourceforge.net/tracker/?func=detail&aid=3002736&group_id=176962&atid=879332
  */
-public class MLocationExt extends MLocation implements I_C_Location_Amerp
+public class MLocationExt extends MLocation  implements I_C_Location_Amerp
 {
 	/**
 	 * 
@@ -743,6 +743,9 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp
 					outStr.append(getRegion().getTrlName());
 				else if (super.getRegionName() != null && super.getRegionName().length() > 0)
 					outStr.append(super.getRegionName());	//	local region name
+			} else if(token.startsWith("NR")) {
+				if(getRegionName() != null)
+					outStr.append(getRegionName());
 			}
 			else if (token.equals("P"))
 			{
@@ -798,9 +801,8 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp
 	 * 	Get (local) Region Name
 	 *	@return	region Name or ""
 	 */
-	/*public String getRegionName()
-	{
-		return getRegionName(false);
+	public String getRegionName() {
+		return (String)get_Value(COLUMNNAME_RegionName);
 	}	//	getRegionName
 
 	/**
@@ -808,7 +810,7 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp
 	 * 	@param getFroMRegionExt get from region (not locally)
 	 *	@return	region Name or ""
 	 */
-	/*public String getRegionName (boolean getFroMRegionExt)
+	public String getRegionName (boolean getFroMRegionExt)
 	{
 		if (getFroMRegionExt && getCountry().isHasRegion() 
 			&& getRegion() != null)
@@ -817,7 +819,7 @@ public class MLocationExt extends MLocation implements I_C_Location_Amerp
 			return getRegion().getName();
 		}
 		//
-		String regionName = super.getRegionName();
+		String regionName = getRegionName();
 		if (regionName == null)
 			regionName = "";
 		return regionName;
