@@ -59,7 +59,7 @@ import com.kpiactive.model.MSuburb;
 
 /**
  * @author luisamesty
- *
+ * @contributor victor.suarez.is@gmail.com
  */
 public class WLocationExtDialog extends Window implements EventListener<Event>, ValueChangeListener
 {
@@ -340,7 +340,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 		txtFullAddress.setCols(60);
 		txtFullAddress.setRows(3);
 		txtFullAddress.setMaxlength(MLocationExt.getFieldLength(MLocationExt.COLUMNAME_FullAddress));
-		txtFullAddress.setEnabled(false);
+		txtFullAddress.setEnabled(true);
 
 		lstRegion    = new Listbox();
 		lstRegion.setMold("select");
@@ -1370,43 +1370,41 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			if(txtRegionName.getText() == null)
 				m_location.setRegionName(null);
 			
-			//if (!lstRegion.getSelectedItem().equals(null)) {
-			if (lstRegion.getSelectedItem() != null) {
+			if (lstRegion.getSelectedItem() != null && lstRegion.getSelectedItem().getValue() != null) {
 				MRegionExt r = (MRegionExt)lstRegion.getSelectedItem().getValue();
-//				MRegionExt rr = (MRegion)lstRegion.getSelectedItem().getValue();
-//				// POWrapper Class
-//				I_C_Region_Amerp r =  POWrapper.create(rr, I_C_Region_Amerp.class);
-
-				m_location.setRegion(r); 
+				m_location.setRegion(r);
+				m_location.setRegionName(r.getName());
 			} else {
 				m_location.setC_Region_ID(0);
+				m_location.setRegionName(null);
 			}
-			if(lstRegion.getSelectedItem() == null && txtRegionName.getText() != null)
-				m_location.setRegionName(txtRegionName.getText());
 		} else {
 			m_location.setC_Region_ID(0);
 			m_location.setRegionName(null);
 		}
 		// Municipality
-		if (lstMunicipality.getSelectedItem() != null ) {
+		if (lstMunicipality.getSelectedItem() != null && lstMunicipality.getSelectedItem().getValue() != null) {
 			MMunicipality m=(MMunicipality)lstMunicipality.getSelectedItem().getValue();
 			m_location.setMunicipality(m);
 		} else {
 			m_location.setMunicipality(null);
+			m_location.setMunicipalityName(null);
 		}
 		// Parish
-		if (lstParish.getSelectedItem() != null) {
-			MParish p=(MParish)lstParish.getSelectedItem().getValue();
+		if (lstParish.getSelectedItem() != null && lstParish.getSelectedItem().getValue() != null) {
+			MParish p = (MParish)lstParish.getSelectedItem().getValue();
 			m_location.setParish(p);
 		} else {
 			m_location.setParish(null);
+			m_location.setParishName(null);
 		}
 		// Suburb
-		if (lstSuburb.getSelectedItem() != null) {
+		if (lstSuburb.getSelectedItem() != null && lstSuburb.getSelectedItem().getValue() != null) {
 			MSuburb p = (MSuburb)lstSuburb.getSelectedItem().getValue();
 			m_location.setSuburb(p);
 		} else {
 			m_location.setSuburb(null);
+			m_location.setSuburbName(null);
 		}
 		
 		//Save changes 		
@@ -1458,8 +1456,7 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 	}
 	
 	/** returns a string that contains all fields of current form */
-	String getFullAddress()
-	{
+	String getFullAddress() {
 		MRegionExt region = null;
 		MMunicipality municipality = null;
 		MParish parish = null;
@@ -1492,18 +1489,12 @@ public class WLocationExtDialog extends Window implements EventListener<Event>, 
 			if (C_City_ID > 0)
 				address = address + (C_City_ID > 0  ? fCity.getDisplay() + ", " : "");
 		}
-		if (parish != null)
-			address = address + (parish.getName() != null ? parish.getName() + ", " : "");
-		if (suburb != null)
-			address = address + (suburb.getName() != null ? suburb.getName() + ", " : "");
-		if (municipality != null)
-			address = address + (municipality.getName() != null ? municipality.getName() + ", " : "");
-		if (region != null)
-			address = address + (region.getName() != null ? region.getName() + ", " : "");
-		if(regionName != null)
-			address = address + regionName + ", "; 
-		if(postal != null)
-			address = address + postal + ", ";
+		address = address + (parish != null && parish.getName() != null ? parish.getName() + ", " : "");
+		address = address + (suburb != null && suburb.getName() != null ? suburb.getName() + ", " : "");
+		address = address + (municipality != null && municipality.getName() != null ? municipality.getName() + ", " : "");
+		address = address + (region != null && region.getName() != null ? region.getName() + ", " : "");
+		address = address + (regionName != null ? regionName + ", " : "");
+		address = address + (postal != null ? postal + ", " : "");
 		address = address + (c.getName() != null ? c.getName() : "");
 		//return address.replace(" ", "+");
 		return address;

@@ -34,7 +34,7 @@ import org.zkoss.zk.ui.event.*;
 
 /**
  * @author luisamesty
- *
+ * @contributor victor.suarez.is@gmail.com
  */
 public class WLocationExtEditor extends WEditor implements EventListener<Event>, PropertyChangeListener, ContextMenuListener
 {
